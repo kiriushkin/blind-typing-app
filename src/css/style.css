@@ -1,3 +1,9 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-boxa;
+}
+
 .key-hint {
   position: absolute;
   top: 50%;
@@ -25,11 +31,13 @@
   color: white;
   background-color: limegreen;
   border-radius: 5px;
+  padding: 0 2px 0;
 }
 
 .typing-text__char_wrong {
   color: white;
   background-color: red;
   border-radius: 5px;
+  padding: 0 2px 0;
 }
 /*# sourceMappingURL=style.css.map */

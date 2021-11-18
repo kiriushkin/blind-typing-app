@@ -1,33 +1,53 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const textObj = {
-  initialText: "",
+let textObj = {
+  initialText: "fff",
   curChar: "",
   curIndex: 0,
   lastKey: "",
+  isError: false,
 };
 
 function App() {
-  const [text, setText] = useState(textObj);
-  const getBaconText = () => {
-    fetch("https://baconipsum.com/api/?type=all-meat&paras=2")
-      .then((resp) => resp.json())
-      .then((resp) => {
-        setText({ ...text, initialText: resp.reduce((a, b) => a + b) });
-        console.log(text);
-      });
-  };
-  const keyDownHandler = (e) => {
-    if (!e.repeat) {
-      console.log(text);
-      setText({ ...text, lastKey: e.key });
-      console.log(text);
-    }
+  const [text, _setText] = useState(textObj);
+
+  const textRef = useRef(text);
+  const setText = (data) => {
+    textRef.current = data;
+    _setText(data);
   };
 
   useEffect(() => {
-    getBaconText();
-    window.addEventListener("keydown", keyDownHandler);
+    (async () => {
+      let resp = await fetch(
+        "https://baconipsum.com/api/?type=all-meat&paras=1"
+      );
+      resp = await resp.json();
+      setText({
+        ...textRef.current,
+        initialText: resp.reduce((a, b) => a + b).replace(/\s\s/, " "),
+        curChar: resp[0][0],
+      });
+    })();
+
+    document.addEventListener("keydown", (e) => {
+      if (!e.repeat && e.key.match(/[\w\s\.\,\-]/) && e.key.length == 1) {
+        const data = textRef.current;
+        setText({ ...data, lastKey: e.key });
+        console.log(data.curChar, e.key);
+        if (data.curChar == e.key) {
+          setText({
+            ...data,
+            curChar: data.initialText[data.curIndex + 1],
+            curIndex: data.curIndex + 1,
+            isError: false,
+          });
+          console.log("correct");
+        } else {
+          setText({ ...data, isError: true });
+        }
+      }
+    });
   }, []);
 
   return (
@@ -48,7 +68,11 @@ function App() {
             return (
               <span
                 key={index}
-                className="typing-text__char typing-text__char_current"
+                className={
+                  text.isError
+                    ? "typing-text__char typing-text__char_wrong"
+                    : "typing-text__char typing-text__char_current"
+                }
               >
                 {char}
               </span>
